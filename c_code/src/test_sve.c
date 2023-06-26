@@ -321,6 +321,17 @@ void print_array(size_t len, double arr[len])
 	printf("]\n");
 }
 
+void print_uint_array(size_t len, uint64_t arr[len])
+{
+	printf("[");
+	for (size_t i = 0; i < len; i++)
+	{
+		printf("%llu ", arr[i]);
+	}
+
+	printf("]\n");
+}
+
 // void daxpy_1_1_sve(int64_t n, double da, double *dx, double *dy)
 // {
 //     int64_t i = 0;

@@ -24,7 +24,7 @@ int main()
 	uint64_t result[12];
 	shift_left_test(x, x, result);
 
-	print_array(12, result);
+	print_uint_array(12, result);
 
 	return 0;
 }
