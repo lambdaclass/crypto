@@ -21,7 +21,7 @@ int main()
 	print_array(ARRAY_LENGTH, e);
 
 	uint64_t x[12] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
-	uint64_t result[12];
+	uint64_t result[12] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 	shift_left_test(x, x, result);
 
 	print_uint_array(12, result);
