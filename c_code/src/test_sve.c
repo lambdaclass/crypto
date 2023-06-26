@@ -95,7 +95,7 @@ void sve_substract(uint64_t x[STATE_WIDTH], uint64_t y[STATE_WIDTH], uint64_t *r
 	int64_t i = 0;
 	uint64_t one = 1;
 	svbool_t pg = svwhilelt_b64(i, (int64_t)STATE_WIDTH);
-	svbool_t substraction_underflowed;
+	svbool_t substraction_underflowed = svwhilelt_b64(1, 0);
 	do
 	{
 		svuint64_t x_vec = svld1(pg, &x[i]);
@@ -107,6 +107,7 @@ void sve_substract(uint64_t x[STATE_WIDTH], uint64_t y[STATE_WIDTH], uint64_t *r
 
 		i += svcntd();
 		pg = svwhilelt_b64(i, (int64_t)STATE_WIDTH); // [1]
+		substraction_underflowed = svwhilelt_b64(1, 0);
 	} while (svptest_any(svptrue_b64(), pg));
 }
 
