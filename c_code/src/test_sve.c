@@ -102,7 +102,7 @@ void sve_substract(uint64_t x[STATE_WIDTH], uint64_t y[STATE_WIDTH], uint64_t *r
 		svuint64_t y_vec = svld1(pg, &y[i]);
 		svst1(pg, &result[i], svsub_z(pg, x_vec, y_vec));
 
-		substraction_underflowed = svcmplt(pg, x_vec, y_vec);
+		substraction_underflowed = svcmplt_u64(pg, x_vec, y_vec);
 		svst1(substraction_underflowed, &underflowed[i], svld1(pg, &one));
 
 		i += svcntd();
