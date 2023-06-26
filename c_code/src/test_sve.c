@@ -4,6 +4,8 @@
 #include <stdint.h>
 #include <stdio.h>
 
+const uint64_t ONES[STATE_WIDTH] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
+
 bool will_sum_overflow(uint64_t a, uint64_t b)
 {
 	if ((UINT_MAX - a) < b)
@@ -93,7 +95,7 @@ void sve_add(uint64_t x[STATE_WIDTH], uint64_t y[STATE_WIDTH], uint64_t *result,
 void sve_substract(uint64_t x[STATE_WIDTH], uint64_t y[STATE_WIDTH], uint64_t *result, uint64_t *underflowed)
 {
 	int64_t i = 0;
-	uint64_t one = 1;
+	// uint64_t one = 1;
 	svbool_t pg = svwhilelt_b64(i, (int64_t)STATE_WIDTH);
 	svbool_t substraction_underflowed;
 	do
@@ -102,10 +104,10 @@ void sve_substract(uint64_t x[STATE_WIDTH], uint64_t y[STATE_WIDTH], uint64_t *r
 		svuint64_t y_vec = svld1(pg, &y[i]);
 		svst1(pg, &result[i], svsub_z(pg, x_vec, y_vec));
 
-		// svuint64_t one_vec = svld1(pg, &one);
+		svuint64_t one_vec = svld1(pg, &ONES[i]);
 
 		substraction_underflowed = svcmplt_u64(pg, x_vec, y_vec);
-		svst1(substraction_underflowed, &underflowed[i], svcntd());
+		svst1(substraction_underflowed, &underflowed[i], one_vec);
 
 		i += svcntd();
 		pg = svwhilelt_b64(i, (int64_t)STATE_WIDTH); // [1]
