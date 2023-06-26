@@ -38,7 +38,7 @@ int main()
 	uint64_t x_2[12] = {UINT64_MAX, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
 	uint64_t y_2[12] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
 	uint64_t result_2[12] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-	uint64_t overflowed[12] = {2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2};
+	uint64_t overflowed[12] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 	sve_add(x_2, y_2, result_2, overflowed);
 	print_uint_array(12, result_2);
 	print_uint_array(12, overflowed);
