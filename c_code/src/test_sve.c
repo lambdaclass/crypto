@@ -4,7 +4,14 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#define ZERO_ARRAY                                                                                                     \
+	{                                                                                                              \
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0                                                                     \
+	}
+
 const uint64_t ONES[STATE_WIDTH] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
+const uint64_t ZEROES[STATE_WIDTH] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+const uint64_t THIRTY_TWOS[STATE_WIDTH] = {32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32};
 
 bool will_sum_overflow(uint64_t a, uint64_t b)
 {
@@ -17,19 +24,6 @@ bool will_sum_overflow(uint64_t a, uint64_t b)
 }
 
 bool will_sub_overflow(uint64_t a, uint64_t b) { return a < b; }
-
-// void vector_mont_red_cst(uint64_t x[12], uint64_t y[12], uint64_t *result)
-// {
-// 	bool e[12] = will_sum_overflow(x, x << 32);
-// 	uint64_t a[12] = x + (x << 32);
-
-// 	uint64_t b[12] = (a - (a >> 32)) - e;
-
-// 	bool c[12] = will_sub_overflow(y, b);
-// 	uint64_t r[12] = y - b;
-
-// 	return r - (uint64_t [12])((uint32_t [12]) 0) - (uint32_t [12])c)
-// }
 
 void sve_shift_left(uint64_t x[STATE_WIDTH], uint64_t y[STATE_WIDTH], uint64_t *result)
 {
@@ -102,6 +96,174 @@ void sve_substract(uint64_t x[STATE_WIDTH], uint64_t y[STATE_WIDTH], uint64_t *r
 		i += svcntd();
 		pg = svwhilelt_b64(i, (int64_t)STATE_WIDTH); // [1]
 	} while (svptest_any(svptrue_b64(), pg));
+}
+
+void sve_substract_as_u32(uint64_t x[STATE_WIDTH], uint64_t y[STATE_WIDTH], uint64_t *result)
+{
+	int32_t i = 0;
+	svbool_t pg = svwhilelt_b32(i, (int32_t)STATE_WIDTH);
+	do
+	{
+		svuint32_t x_vec = svld1(pg, (uint32_t)&x[i]);
+		svuint32_t y_vec = svld1(pg, (uint32_t)&y[i]);
+		svst1(pg, &result[i], svsub_z(pg, x_vec, y_vec));
+
+		i += svcntd();
+		pg = svwhilelt_b32(i, (int32_t)STATE_WIDTH); // [1]
+	} while (svptest_any(svptrue_b32(), pg));
+}
+
+void sve_mont_red_cst(uint64_t x[STATE_WIDTH], uint64_t y[STATE_WIDTH], uint64_t *result)
+{
+	uint64_t e[STATE_WIDTH] = ZERO_ARRAY;
+	uint64_t a[STATE_WIDTH] = ZERO_ARRAY;
+	uint64_t x_shifted[STATE_WIDTH] = ZERO_ARRAY;
+
+	sve_shift_left(x, THIRTY_TWOS, x_shifted);
+	sve_add(x, x_shifted, a, e);
+
+	uint64_t a_shifted[STATE_WIDTH] = ZERO_ARRAY;
+	sve_shift_right(a, THIRTY_TWOS, a_shifted);
+
+	uint64_t b[STATE_WIDTH] = ZERO_ARRAY;
+	uint64_t _b_underflow = ZERO_ARRAY;
+	sve_substract(a, a_shifted, b, _b_underflow);
+	sve_substract(b, e, b, _b_underflow);
+
+	uint64_t r[STATE_WIDTH] = ZERO_ARRAY;
+	uint64_t c[STATE_WIDTH] = ZERO_ARRAY;
+
+	sve_substract(y, b, r, c);
+
+	uint64_t minus_c[STATE_WIDTH] = ZERO_ARRAY;
+	sve_substract_as_u32(ZEROES, c, minus_c);
+
+	sve_substract(r, minus_c, result, _b_underflow);
+}
+
+void sve_multiply_montgomery_form_felts(uint64_t a[STATE_WIDTH], uint64_t b[STATE_WIDTH], uint64_t *result)
+{
+	sve_mont_red_cst(a, b, result);
+}
+
+void sve_square(uint64_t *a) { sve_multiply_montgomery_form_felts(a, a, a); }
+
+void sve_exp_acc_3(uint64_t base[STATE_WIDTH], uint64_t tail[STATE_WIDTH], uint64_t *result)
+{
+	// Copy `base` into `result`
+	for (int i = 0; i < STATE_WIDTH; i++)
+	{
+		result[i] = base[i];
+	}
+
+	// Square each element of `result` M number of times
+	for (int i = 0; i < 3; i++)
+	{
+		sve_square(result);
+	}
+
+	sve_multiply_montgomery_form_felts(result, tail, result);
+}
+
+void sve_exp_acc_6(uint64_t base[STATE_WIDTH], uint64_t tail[STATE_WIDTH], uint64_t *result)
+{
+	// Copy `base` into `result`
+	for (int i = 0; i < STATE_WIDTH; i++)
+	{
+		result[i] = base[i];
+	}
+
+	// Square each element of `result` M number of times
+	for (int i = 0; i < 6; i++)
+	{
+		sve_square(result);
+	}
+
+	sve_multiply_montgomery_form_felts(result, tail, result);
+}
+
+void sve_exp_acc_12(uint64_t base[STATE_WIDTH], uint64_t tail[STATE_WIDTH], uint64_t *result)
+{
+	// Copy `base` into `result`
+	for (int i = 0; i < STATE_WIDTH; i++)
+	{
+		result[i] = base[i];
+	}
+
+	// Square each element of `result` M number of times
+	for (int i = 0; i < 12; i++)
+	{
+		sve_square(result);
+	}
+
+	sve_multiply_montgomery_form_felts(result, tail, result);
+}
+
+void sve_exp_acc_31(uint64_t base[STATE_WIDTH], uint64_t tail[STATE_WIDTH], uint64_t *result)
+{
+	// Copy `base` into `result`
+	for (int i = 0; i < STATE_WIDTH; i++)
+	{
+		result[i] = base[i];
+	}
+
+	// Square each element of `result` M number of times
+	for (int i = 0; i < 31; i++)
+	{
+		sve_square(result);
+	}
+
+	sve_multiply_montgomery_form_felts(result, tail, result);
+}
+
+void sve_apply_inv_sbox(uint64_t state[STATE_WIDTH])
+{
+	uint64_t t1[STATE_WIDTH];
+
+	// Copy `base` into `result`
+	for (int i = 0; i < STATE_WIDTH; i++)
+	{
+		t1[i] = state[i];
+	}
+
+	sve_square(t1);
+
+	uint64_t t2[STATE_WIDTH];
+
+	// Copy `base` into `result`
+	for (int i = 0; i < STATE_WIDTH; i++)
+	{
+		t2[i] = t1[i];
+	}
+
+	sve_square(t2);
+
+	uint64_t t3[STATE_WIDTH] = ZERO_ARRAY;
+	sve_exp_acc_3(t2, t2, t3);
+
+	uint64_t t4[STATE_WIDTH] = ZERO_ARRAY;
+	sve_exp_acc_6(t3, t3, t4);
+
+	uint64_t t5[STATE_WIDTH] = ZERO_ARRAY;
+	sve_exp_acc_12(t4, t4, t5);
+
+	uint64_t t6[STATE_WIDTH] = ZERO_ARRAY;
+	sve_exp_acc_6(t5, t3, t6);
+
+	uint64_t t7[STATE_WIDTH] = ZERO_ARRAY;
+	sve_exp_acc_31(t6, t6, t7);
+
+	sve_square(t7);
+	uint64_t a[STATE_WIDTH] = ZERO_ARRAY;
+	sve_multiply_montgomery_form_felts(t7, t6, a);
+	sve_square(a);
+	sve_square(a);
+
+	uint64_t b[STATE_WIDTH] = ZERO_ARRAY;
+	sve_multiply_montgomery_form_felts(t1, t2, b);
+	sve_multiply_montgomery_form_felts(b, state, b);
+
+	sve_multiply_montgomery_form_felts(a, b, state);
 }
 
 // /// Montgomery reduction (constant time)
@@ -340,26 +502,7 @@ void apply_inv_sbox_c(uint64_t state[STATE_WIDTH])
 	}
 }
 
-void daxpy_1_1(int64_t n, double da, double *dx, double *dy)
-{
-	for (int64_t i = 0; i < n; ++i)
-	{
-		dy[i] = dx[i] * da + dy[i];
-	}
-}
-
-void print_array(size_t len, double arr[len])
-{
-	printf("[");
-	for (size_t i = 0; i < len; i++)
-	{
-		printf("%f ", arr[i]);
-	}
-
-	printf("]\n");
-}
-
-void print_uint_array(size_t len, uint64_t arr[len])
+void print_array(size_t len, uint64_t arr[len])
 {
 	printf("[");
 	for (size_t i = 0; i < len; i++)
@@ -368,18 +511,4 @@ void print_uint_array(size_t len, uint64_t arr[len])
 	}
 
 	printf("]\n");
-}
-
-void daxpy_1_1_sve(int64_t n, double da, double *dx, double *dy)
-{
-	int64_t i = 0;
-	svbool_t pg = svwhilelt_b64(i, n); // [1]
-	do
-	{
-		svfloat64_t dx_vec = svld1(pg, &dx[i]);             // [2]
-		svfloat64_t dy_vec = svld1(pg, &dy[i]);             // [2]
-		svst1(pg, &dy[i], svmla_x(pg, dy_vec, dx_vec, da)); // [3]
-		i += svcntd();                                      // [4]
-		pg = svwhilelt_b64(i, n);                           // [1]
-	} while (svptest_any(svptrue_b64(), pg));                   // [5]
 }
