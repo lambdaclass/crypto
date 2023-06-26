@@ -76,7 +76,7 @@ void sve_add(uint64_t x[STATE_WIDTH], uint64_t y[STATE_WIDTH], uint64_t *result,
 		svuint64_t one_vec = svld1(pg, &ONES[i]);
 
 		addition_overflowed = svcmplt(pg, addition_result, svmax_z(pg, x_vec, y_vec));
-		svst1(addition_overflowed, &overflowed[i], svld1(pg, one_vec));
+		svst1(addition_overflowed, &overflowed[i], one_vec);
 
 		i += svcntd();
 		pg = svwhilelt_b64(i, (int64_t)STATE_WIDTH); // [1]
