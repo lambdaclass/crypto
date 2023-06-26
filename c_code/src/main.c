@@ -50,12 +50,5 @@ int main()
 	sve_substract(x_3, y_3, result_3);
 	print_uint_array(12, result_3);
 
-	// TEST WILL OVERFLOW
-	uint64_t x_4[12] = {UINT64_MAX, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
-	uint64_t y_4[12] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
-	uint64_t result_4[12] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-	sve_will_sum_overflow(x_4, y_4, result_4);
-	print_uint_array(12, result_4);
-
 	return 0;
 }
