@@ -28,25 +28,25 @@ int main()
 	print_uint_array(12, result);
 
 	// TEST SHIFT RIGHT
-	uint64_t x[12] = {0, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048};
-	uint64_t y[12] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
-	uint64_t result[12] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-	sve_shift_right(x, y, result);
-	print_uint_array(12, result);
+	uint64_t x_1[12] = {0, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048};
+	uint64_t y_1[12] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
+	uint64_t result_1[12] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+	sve_shift_right(x_1, y_1, result_1);
+	print_uint_array(12, result_1);
 
 	// TEST ADD
-	uint64_t x[12] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
-	uint64_t y[12] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
-	uint64_t result[12] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-	sve_add(x, y, result);
-	print_uint_array(12, result);
+	uint64_t x_2[12] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
+	uint64_t y_2[12] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
+	uint64_t result_2[12] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+	sve_add(x_2, y_2, result_2);
+	print_uint_array(12, result_2);
 
 	// TEST SUBSTRACT
-	uint64_t x[12] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
-	uint64_t y[12] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
-	uint64_t result[12] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-	sve_substract(x, y, result);
-	print_uint_array(12, result);
+	uint64_t x_3[12] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
+	uint64_t y_3[12] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
+	uint64_t result_3[12] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+	sve_substract(x_3, y_3, result_3);
+	print_uint_array(12, result_3);
 
 	return 0;
 }
