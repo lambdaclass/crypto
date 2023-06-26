@@ -82,7 +82,7 @@ void sve_add(uint64_t x[STATE_WIDTH], uint64_t y[STATE_WIDTH], uint64_t *result)
 	{
 		svuint64_t x_vec = svld1(pg, &x[i]);
 		svuint64_t y_vec = svld1(pg, &y[i]);
-		svst1(pg, &result[i], svadd(pg, x_vec, y_vec));
+		svst1(pg, &result[i], svadd_z(pg, x_vec, y_vec));
 
 		i += svcntd();
 		pg = svwhilelt_b64(i, (int64_t)STATE_WIDTH); // [1]
@@ -97,7 +97,7 @@ void sve_substract(uint64_t x[STATE_WIDTH], uint64_t y[STATE_WIDTH], uint64_t *r
 	{
 		svuint64_t x_vec = svld1(pg, &x[i]);
 		svuint64_t y_vec = svld1(pg, &y[i]);
-		svst1(pg, &result[i], svsub(pg, x_vec, y_vec));
+		svst1(pg, &result[i], svsub_z(pg, x_vec, y_vec));
 
 		i += svcntd();
 		pg = svwhilelt_b64(i, (int64_t)STATE_WIDTH); // [1]
