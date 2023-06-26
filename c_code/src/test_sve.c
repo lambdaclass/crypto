@@ -39,23 +39,6 @@ bool will_sub_overflow(uint64_t a, uint64_t b) { return a < b; }
 // 	return r - (uint64_t [12])((uint32_t [12]) 0) - (uint32_t [12])c)
 // }
 
-svbool_t sve_will_sum_overflow(uint64_t x[STATE_WIDTH], uint64_t y[STATE_WIDTH], uint64_t *result)
-{
-	int64_t i = 0;
-	svbool_t pg = svwhilelt_b64(i, (int64_t)STATE_WIDTH);
-	do
-	{
-		svuint64_t x_vec = svld1(pg, &x[i]);
-		svuint64_t y_vec = svld1(pg, &y[i]);
-		svuint64_t uint64_max = 2 ^ 64 - 1;
-		svbool_t will_overflow = svcpmlt(pg, uint64_max - x_vec, y_vec);
-		svst1(pg, &result[i], will_overflow);
-
-		i += svcntd();
-		pg = svwhilelt_b64(i, (int64_t)STATE_WIDTH); // [1]
-	} while (svptest_any(svptrue_b64(), pg));
-}
-
 void sve_shift_left(uint64_t x[STATE_WIDTH], uint64_t y[STATE_WIDTH], uint64_t *result)
 {
 	int64_t i = 0;
@@ -86,7 +69,7 @@ void sve_shift_right(uint64_t x[STATE_WIDTH], uint64_t y[STATE_WIDTH], uint64_t 
 	} while (svptest_any(svptrue_b64(), pg));
 }
 
-void sve_add(uint64_t x[STATE_WIDTH], uint64_t y[STATE_WIDTH], uint64_t *result)
+void sve_add(uint64_t x[STATE_WIDTH], uint64_t y[STATE_WIDTH], uint64_t *result, uint64_t *overflowed)
 {
 	int64_t i = 0;
 	svbool_t pg = svwhilelt_b64(i, (int64_t)STATE_WIDTH);
@@ -94,7 +77,11 @@ void sve_add(uint64_t x[STATE_WIDTH], uint64_t y[STATE_WIDTH], uint64_t *result)
 	{
 		svuint64_t x_vec = svld1(pg, &x[i]);
 		svuint64_t y_vec = svld1(pg, &y[i]);
-		svst1(pg, &result[i], svadd_z(pg, x_vec, y_vec));
+		svuint64_t addition_result = svadd_z(pg, x_vec, y_vec);
+		svst1(pg, &result[i], addition_result);
+
+		svbool_t overflowed = svcmplt(pg, addition_result, svmax_z(x_vec, y_vec));
+		svst1(overflowed, &overflowed[i], svptrue_b64());
 
 		i += svcntd();
 		pg = svwhilelt_b64(i, (int64_t)STATE_WIDTH); // [1]
