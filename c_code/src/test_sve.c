@@ -44,21 +44,7 @@ bool will_sub_overflow(uint64_t a, uint64_t b) { return a < b; }
 // 	return r - (uint64_t [12])((uint32_t [12]) 0) - (uint32_t [12])c)
 // }
 
-// void daxpy_1_1_sve(int64_t n, double da, double *dx, double *dy)
-// {
-//     int64_t i = 0;
-//     svbool_t pg = svwhilelt_b64(i, n); // [1]
-//     do
-//     {
-//         svfloat64_t dx_vec = svld1(pg, &dx[i]);             // [2]
-//         svfloat64_t dy_vec = svld1(pg, &dy[i]);             // [2]
-//         svst1(pg, &dy[i], svmla_x(pg, dy_vec, dx_vec, da)); // [3]
-//         i += svcntd();                                      // [4]
-//         pg = svwhilelt_b64(i, n);                           // [1]
-//     } while (svptest_any(svptrue_b64(), pg));               // [5]
-// }
-
-void shift_left_test(uint64_t x[12], uint64_t y[12], uint64_t *result)
+void sve_shift_left(uint64_t x[STATE_WIDTH], uint64_t y[STATE_WIDTH], uint64_t *result)
 {
 	int64_t i = 0;
 	svbool_t pg = svwhilelt_b64(i, (int64_t)STATE_WIDTH);
@@ -67,6 +53,51 @@ void shift_left_test(uint64_t x[12], uint64_t y[12], uint64_t *result)
 		svuint64_t x_vec = svld1(pg, &x[i]);
 		svuint64_t y_vec = svld1(pg, &y[i]);
 		svst1(pg, &result[i], svlsl_z(pg, x_vec, y_vec));
+
+		i += svcntd();
+		pg = svwhilelt_b64(i, (int64_t)STATE_WIDTH); // [1]
+	} while (svptest_any(svptrue_b64(), pg));
+}
+
+void sve_shift_right(uint64_t x[STATE_WIDTH], uint64_t y[STATE_WIDTH], uint64_t *result)
+{
+	int64_t i = 0;
+	svbool_t pg = svwhilelt_b64(i, (int64_t)STATE_WIDTH);
+	do
+	{
+		svuint64_t x_vec = svld1(pg, &x[i]);
+		svuint64_t y_vec = svld1(pg, &y[i]);
+		svst1(pg, &result[i], svlsr_z(pg, x_vec, y_vec));
+
+		i += svcntd();
+		pg = svwhilelt_b64(i, (int64_t)STATE_WIDTH); // [1]
+	} while (svptest_any(svptrue_b64(), pg));
+}
+
+void sve_add(uint64_t x[STATE_WIDTH], uint64_t y[STATE_WIDTH], uint64_t *result)
+{
+	int64_t i = 0;
+	svbool_t pg = svwhilelt_b64(i, (int64_t)STATE_WIDTH);
+	do
+	{
+		svuint64_t x_vec = svld1(pg, &x[i]);
+		svuint64_t y_vec = svld1(pg, &y[i]);
+		svst1(pg, &result[i], svadd(pg, x_vec, y_vec));
+
+		i += svcntd();
+		pg = svwhilelt_b64(i, (int64_t)STATE_WIDTH); // [1]
+	} while (svptest_any(svptrue_b64(), pg));
+}
+
+void sve_substract(uint64_t x[STATE_WIDTH], uint64_t y[STATE_WIDTH], uint64_t *result)
+{
+	int64_t i = 0;
+	svbool_t pg = svwhilelt_b64(i, (int64_t)STATE_WIDTH);
+	do
+	{
+		svuint64_t x_vec = svld1(pg, &x[i]);
+		svuint64_t y_vec = svld1(pg, &y[i]);
+		svst1(pg, &result[i], svsub(pg, x_vec, y_vec));
 
 		i += svcntd();
 		pg = svwhilelt_b64(i, (int64_t)STATE_WIDTH); // [1]
