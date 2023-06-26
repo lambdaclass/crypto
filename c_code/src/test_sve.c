@@ -60,7 +60,7 @@ bool will_sub_overflow(uint64_t a, uint64_t b) { return a < b; }
 
 void shift_left_test(uint64_t x[12], uint64_t y[12], uint64_t *result)
 {
-	svbool_t pg = svwhilelt_b8(0, STATE_WIDTH);
+	svbool_t pg = svwhilelt_b64((uint64_t)0, (uint64_t)STATE_WIDTH);
 	svuint64_t a = svld1(pg, x);
 
 	svst1(pg, result, a);
