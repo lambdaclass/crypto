@@ -27,8 +27,8 @@ int main()
 
 	// TEST SUBSTRACT
 	uint64_t x_3[STATE_WIDTH] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
-	uint64_t y_3[STATE_WIDTH] = {UINT64_MAX,  UINT64_MAX, UINT64_MAX, UINT64_MAX, UINT64_MAX, UINT64_MAX,
-	                             UINT64_MAX1, UINT64_MAX, UINT64_MAX, UINT64_MAX, UINT64_MAX, UINT64_MAX};
+	uint64_t y_3[STATE_WIDTH] = {UINT64_MAX, UINT64_MAX, UINT64_MAX, UINT64_MAX, UINT64_MAX, UINT64_MAX,
+	                             UINT64_MAX, UINT64_MAX, UINT64_MAX, UINT64_MAX, UINT64_MAX, UINT64_MAX};
 	uint64_t result_3[STATE_WIDTH] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 	uint64_t overflowed_3[STATE_WIDTH] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 	sve_substract(x_3, y_3, result_3, overflowed_3);
