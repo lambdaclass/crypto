@@ -14,4 +14,4 @@ void print_uint_array(size_t len, uint64_t arr[len]);
 void sve_shift_left(uint64_t x[STATE_WIDTH], uint64_t y[STATE_WIDTH], uint64_t *result);
 void sve_shift_right(uint64_t x[STATE_WIDTH], uint64_t y[STATE_WIDTH], uint64_t *result);
 void sve_add(uint64_t x[STATE_WIDTH], uint64_t y[STATE_WIDTH], uint64_t *result, uint64_t *overflowed);
-void sve_substract(uint64_t x[STATE_WIDTH], uint64_t y[STATE_WIDTH], uint64_t *result);
+void sve_substract(uint64_t x[STATE_WIDTH], uint64_t y[STATE_WIDTH], uint64_t *result, uint64_t *overflowed);
