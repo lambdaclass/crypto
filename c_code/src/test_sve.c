@@ -1,13 +1,8 @@
-#ifdef __ARM_FEATURE_SVE
-#include <arm_sve.h>
-#endif /* __ARM_FEATURE_SVE */
-
+#include "test_sve.h"
 #include <limits.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
-
-#define STATE_WIDTH 12
 
 bool will_sum_overflow(uint64_t a, uint64_t b)
 {
@@ -43,6 +38,24 @@ bool will_sub_overflow(uint64_t a, uint64_t b) { return a < b; }
 
 // 	return r - (uint64_t [12])((uint32_t [12]) 0) - (uint32_t [12])c)
 // }
+
+svbool_t sve_will_sum_overflow(uint64_t a[STATE_WIDTH], uint64_t b[STATE_WIDTH], uint64_t *result)
+{
+	int64_t i = 0;
+	svbool_t pg = svwhilelt_b64(i, (int64_t)STATE_WIDTH);
+	do
+	{
+		svuint64_t x_vec = svld1(pg, &x[i]);
+		svuint64_t y_vec = svld1(pg, &y[i]);
+		sv_uint64_t uint64_max = 2 ^ 64 - 1;
+		svbool_t will_overflow = svcpmlt(pg, uint64_max - x_vec, y_vec);
+		svuint64_t reinterpreted = svreinterpret_u64(will_overflow);
+		svst1(pg, &result[i], reinterpreted);
+
+		i += svcntd();
+		pg = svwhilelt_b64(i, (int64_t)STATE_WIDTH); // [1]
+	} while (svptest_any(svptrue_b64(), pg));
+}
 
 void sve_shift_left(uint64_t x[STATE_WIDTH], uint64_t y[STATE_WIDTH], uint64_t *result)
 {
