@@ -21,6 +21,51 @@ bool will_sum_overflow(uint64_t a, uint64_t b)
 
 bool will_sub_overflow(uint64_t a, uint64_t b) { return a < b; }
 
+// void will_sum_overflow(uint64_t a[12], uint64_t b[12])
+// {
+// 	if ((UINT_MAX - a) < b)
+// 	{
+// 		return true;
+// 	}
+
+// 	return false;
+// }
+
+// void vector_mont_red_cst(uint64_t x[12], uint64_t y[12], uint64_t *result)
+// {
+// 	bool e[12] = will_sum_overflow(x, x << 32);
+// 	uint64_t a[12] = x + (x << 32);
+
+// 	uint64_t b[12] = (a - (a >> 32)) - e;
+
+// 	bool c[12] = will_sub_overflow(y, b);
+// 	uint64_t r[12] = y - b;
+
+// 	return r - (uint64_t [12])((uint32_t [12]) 0) - (uint32_t [12])c)
+// }
+
+// void daxpy_1_1_sve(int64_t n, double da, double *dx, double *dy)
+// {
+//     int64_t i = 0;
+//     svbool_t pg = svwhilelt_b64(i, n); // [1]
+//     do
+//     {
+//         svfloat64_t dx_vec = svld1(pg, &dx[i]);             // [2]
+//         svfloat64_t dy_vec = svld1(pg, &dy[i]);             // [2]
+//         svst1(pg, &dy[i], svmla_x(pg, dy_vec, dx_vec, da)); // [3]
+//         i += svcntd();                                      // [4]
+//         pg = svwhilelt_b64(i, n);                           // [1]
+//     } while (svptest_any(svptrue_b64(), pg));               // [5]
+// }
+
+void shift_left_test(uint64_t x[12], uint64_t y[12], uint64_t *result)
+{
+	svbool_t pg = svwhilelt_b64(0, STATE_WIDTH);
+	svuint64_t a = svld1(pg, x);
+
+	svst1(pg, result, a);
+}
+
 // /// Montgomery reduction (constant time)
 // #[inline(always)]
 // const fn mont_red_cst(x: u128) ->u64
