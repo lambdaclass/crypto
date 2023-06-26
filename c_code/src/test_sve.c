@@ -80,8 +80,8 @@ void sve_add(uint64_t x[STATE_WIDTH], uint64_t y[STATE_WIDTH], uint64_t *result,
 		svuint64_t addition_result = svadd_z(pg, x_vec, y_vec);
 		svst1(pg, &result[i], addition_result);
 
-		svbool_t overflowed = svcmplt(pg, addition_result, svmax_z(x_vec, y_vec));
-		svst1(overflowed, &overflowed[i], svptrue_b64());
+		svbool_t addition_overflowed = svcmplt(pg, addition_result, svmax_z(pg, x_vec, y_vec));
+		svst1(addition_overflowed, &overflowed[i], svptrue_b64());
 
 		i += svcntd();
 		pg = svwhilelt_b64(i, (int64_t)STATE_WIDTH); // [1]
