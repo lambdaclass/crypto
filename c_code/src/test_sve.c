@@ -66,7 +66,7 @@ void shift_left_test(uint64_t x[12], uint64_t y[12], uint64_t *result)
 	{
 		svuint64_t x_vec = svld1(pg, &x[i]);
 		svuint64_t y_vec = svld1(pg, &y[i]);
-		svst1(pg, &result[i], svsl1(pg, x_vec, y_vec));
+		svst1(pg, &result[i], svsl1_z(pg, x_vec, y_vec));
 
 		i += svcntd();
 		pg = svwhilelt_b64(i, (int64_t)STATE_WIDTH); // [1]
