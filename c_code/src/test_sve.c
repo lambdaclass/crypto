@@ -60,10 +60,16 @@ bool will_sub_overflow(uint64_t a, uint64_t b) { return a < b; }
 
 void shift_left_test(uint64_t x[12], uint64_t y[12], uint64_t *result)
 {
-	svbool_t pg = svwhilelt_b64((uint64_t)0, (uint64_t)STATE_WIDTH);
-	svuint64_t a = svld1(pg, x);
+	uint64_t i = 0;
+	svbool_t pg = svwhilelt_b64(i, STATE_WIDTH);
+	do
+	{
+		svuint64_t a = svld1(pg, &x[i]);
+		i += svcntd();
 
-	svst1(pg, result, a);
+		pg = svwhilelt_b64(i, STATE_WIDTH); // [1]
+		svst1(pg, &result[i], a);
+	} while (svptest_any(svptrue_b64(), pg));
 }
 
 // /// Montgomery reduction (constant time)
