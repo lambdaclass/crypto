@@ -17,7 +17,7 @@ int main()
 	print_uint_array(STATE_WIDTH, result_1);
 
 	// TEST ADD
-	uint64_t x_2[STATE_WIDTH] = {UINT64_MAX, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
+	uint64_t x_2[STATE_WIDTH] = {UINT64_MAX, UINT64_MAX, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
 	uint64_t y_2[STATE_WIDTH] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
 	uint64_t result_2[STATE_WIDTH] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 	uint64_t overflowed_2[STATE_WIDTH] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
