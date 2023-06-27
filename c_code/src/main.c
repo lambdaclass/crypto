@@ -37,15 +37,3 @@ int main()
 
 	return 0;
 }
-
-// fn multiply(a: [FELT; 12], b: [FELT; 12]) -> [FELT; 12] {
-
-// }
-
-/*
-        struct Pepe {
-                uint64_t A[23];
-        }
-
-
-*/
