@@ -113,6 +113,36 @@ void sve_substract_as_u32(const uint64_t x[STATE_WIDTH], const uint64_t y[STATE_
 	} while (svptest_any(svptrue_b32(), pg));
 }
 
+void sve_multiply_low(const uint64_t x[STATE_WIDTH], const uint64_t y[STATE_WIDTH], uint64_t *result)
+{
+	int64_t i = 0;
+	svbool_t pg = svwhilelt_b64(i, (int64_t)STATE_WIDTH);
+	do
+	{
+		svuint64_t x_vec = svld1(pg, &x[i]);
+		svuint64_t y_vec = svld1(pg, &y[i]);
+		svst1(pg, &result[i], svmul_z(pg, x_vec, y_vec));
+
+		i += svcntd();
+		pg = svwhilelt_b64(i, (int64_t)STATE_WIDTH); // [1]
+	} while (svptest_any(svptrue_b64(), pg));
+}
+
+void sve_multiply_high(const uint64_t x[STATE_WIDTH], const uint64_t y[STATE_WIDTH], uint64_t *result)
+{
+	int64_t i = 0;
+	svbool_t pg = svwhilelt_b64(i, (int64_t)STATE_WIDTH);
+	do
+	{
+		svuint64_t x_vec = svld1(pg, &x[i]);
+		svuint64_t y_vec = svld1(pg, &y[i]);
+		svst1(pg, &result[i], svmulh_z(pg, x_vec, y_vec));
+
+		i += svcntd();
+		pg = svwhilelt_b64(i, (int64_t)STATE_WIDTH); // [1]
+	} while (svptest_any(svptrue_b64(), pg));
+}
+
 void sve_mont_red_cst(uint64_t x[STATE_WIDTH], uint64_t y[STATE_WIDTH], uint64_t *result)
 {
 	uint64_t e[STATE_WIDTH] = ZERO_ARRAY;
@@ -143,7 +173,14 @@ void sve_mont_red_cst(uint64_t x[STATE_WIDTH], uint64_t y[STATE_WIDTH], uint64_t
 
 void sve_multiply_montgomery_form_felts(uint64_t a[STATE_WIDTH], uint64_t b[STATE_WIDTH], uint64_t *result)
 {
-	sve_mont_red_cst(a, b, result);
+
+	uint64_t low[STATE_WIDTH] = ZERO_ARRAY;
+	uint64_t high[STATE_WIDTH] = ZERO_ARRAY;
+
+	sve_multiply_low(a, b, low);
+	sve_multiply_high(a, b, high);
+
+	sve_mont_red_cst(low, high, result);
 }
 
 void sve_square(uint64_t *a) { sve_multiply_montgomery_form_felts(a, a, a); }
