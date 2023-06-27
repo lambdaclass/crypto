@@ -1,5 +1,7 @@
 use super::{Digest, ElementHasher, Felt, FieldElement, Hasher, StarkField, ONE, ZERO};
 use core::{convert::TryInto, ops::Range};
+#[cfg(feature = "sve_backend")]
+use winter_math::fields::f64::BaseElement;
 
 mod digest;
 pub use digest::RpoDigest;
@@ -9,6 +11,12 @@ use mds_freq::mds_multiply_freq;
 
 #[cfg(test)]
 mod tests;
+
+#[cfg(feature = "sve_backend")]
+#[link(name = "sve", kind = "static")]
+extern "C" {
+    fn sve_apply_inv_sbox(state: *mut std::ffi::c_ulong);
+}
 
 // CONSTANTS
 // ================================================================================================
@@ -351,7 +359,15 @@ impl Rpo256 {
         // apply second half of RPO round
         Self::apply_mds(state);
         Self::add_constants(state, &ARK2[round]);
-        Self::apply_inv_sbox(state);
+        cfg_if::cfg_if! {
+                if #[cfg(feature = "sve_backend")] {
+                unsafe {
+                    sve_apply_inv_sbox(std::mem::transmute::<*mut BaseElement, *mut u64>(state.as_mut_ptr()));
+                }
+            } else {
+                Self::apply_inv_sbox(state);
+            }
+        }
     }
 
     // HELPER FUNCTIONS
