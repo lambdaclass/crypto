@@ -262,28 +262,28 @@ void sve_apply_inv_sbox(uint64_t state[STATE_WIDTH])
 
 	sve_square(t2);
 
-	uint64_t t3[STATE_WIDTH] = ZERO_ARRAY;
+	uint64_t t3[STATE_WIDTH];
 	sve_exp_acc_3(t2, t2, t3);
 
-	uint64_t t4[STATE_WIDTH] = ZERO_ARRAY;
+	uint64_t t4[STATE_WIDTH];
 	sve_exp_acc_6(t3, t3, t4);
 
-	uint64_t t5[STATE_WIDTH] = ZERO_ARRAY;
+	uint64_t t5[STATE_WIDTH];
 	sve_exp_acc_12(t4, t4, t5);
 
-	uint64_t t6[STATE_WIDTH] = ZERO_ARRAY;
+	uint64_t t6[STATE_WIDTH];
 	sve_exp_acc_6(t5, t3, t6);
 
-	uint64_t t7[STATE_WIDTH] = ZERO_ARRAY;
+	uint64_t t7[STATE_WIDTH];
 	sve_exp_acc_31(t6, t6, t7);
 
 	sve_square(t7);
-	uint64_t a[STATE_WIDTH] = ZERO_ARRAY;
+	uint64_t a[STATE_WIDTH];
 	sve_multiply_montgomery_form_felts(t7, t6, a);
 	sve_square(a);
 	sve_square(a);
 
-	uint64_t b[STATE_WIDTH] = ZERO_ARRAY;
+	uint64_t b[STATE_WIDTH];
 	sve_multiply_montgomery_form_felts(t1, t2, b);
 	sve_multiply_montgomery_form_felts(b, state, b);
 
