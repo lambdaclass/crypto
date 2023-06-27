@@ -25,7 +25,7 @@ bool will_sum_overflow(uint64_t a, uint64_t b)
 
 bool will_sub_overflow(uint64_t a, uint64_t b) { return a < b; }
 
-void sve_shift_left(uint64_t x[STATE_WIDTH], uint64_t y[STATE_WIDTH], uint64_t *result)
+void sve_shift_left(uint64_t x[STATE_WIDTH], const uint64_t y[STATE_WIDTH], uint64_t *result)
 {
 	int64_t i = 0;
 	svbool_t pg = svwhilelt_b64(i, (int64_t)STATE_WIDTH);
@@ -40,7 +40,7 @@ void sve_shift_left(uint64_t x[STATE_WIDTH], uint64_t y[STATE_WIDTH], uint64_t *
 	} while (svptest_any(svptrue_b64(), pg));
 }
 
-void sve_shift_right(uint64_t x[STATE_WIDTH], uint64_t y[STATE_WIDTH], uint64_t *result)
+void sve_shift_right(uint64_t x[STATE_WIDTH], const uint64_t y[STATE_WIDTH], uint64_t *result)
 {
 	int64_t i = 0;
 	svbool_t pg = svwhilelt_b64(i, (int64_t)STATE_WIDTH);
@@ -98,14 +98,14 @@ void sve_substract(uint64_t x[STATE_WIDTH], uint64_t y[STATE_WIDTH], uint64_t *r
 	} while (svptest_any(svptrue_b64(), pg));
 }
 
-void sve_substract_as_u32(uint64_t x[STATE_WIDTH], uint64_t y[STATE_WIDTH], uint64_t *result)
+void sve_substract_as_u32(const uint64_t x[STATE_WIDTH], const uint64_t y[STATE_WIDTH], uint64_t *result)
 {
 	int32_t i = 0;
 	svbool_t pg = svwhilelt_b32(i, (int32_t)STATE_WIDTH);
 	do
 	{
-		svuint32_t x_vec = svld1(pg, (uint32_t)&x[i]);
-		svuint32_t y_vec = svld1(pg, (uint32_t)&y[i]);
+		svuint32_t x_vec = svld1(pg, (uint32_t *)&x[i]);
+		svuint32_t y_vec = svld1(pg, (uint32_t *)&y[i]);
 		svst1(pg, &result[i], svsub_z(pg, x_vec, y_vec));
 
 		i += svcntd();
@@ -126,7 +126,7 @@ void sve_mont_red_cst(uint64_t x[STATE_WIDTH], uint64_t y[STATE_WIDTH], uint64_t
 	sve_shift_right(a, THIRTY_TWOS, a_shifted);
 
 	uint64_t b[STATE_WIDTH] = ZERO_ARRAY;
-	uint64_t _b_underflow = ZERO_ARRAY;
+	uint64_t _b_underflow[STATE_WIDTH] = ZERO_ARRAY;
 	sve_substract(a, a_shifted, b, _b_underflow);
 	sve_substract(b, e, b, _b_underflow);
 
