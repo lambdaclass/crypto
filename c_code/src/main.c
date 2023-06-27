@@ -35,5 +35,12 @@ int main()
 	print_array(STATE_WIDTH, result_3);
 	print_array(STATE_WIDTH, overflowed_3);
 
+	// TEST SUBSTRACT AS u32
+	uint64_t x_4[STATE_WIDTH] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
+	uint64_t y_4[STATE_WIDTH] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11};
+	uint64_t result_4[STATE_WIDTH] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+	sve_substract_as_u32(x_4, y_4, result_4);
+	print_array(STATE_WIDTH, result_4);
+
 	return 0;
 }

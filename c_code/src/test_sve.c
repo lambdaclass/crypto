@@ -171,9 +171,8 @@ void sve_mont_red_cst(uint64_t x[STATE_WIDTH], uint64_t y[STATE_WIDTH], uint64_t
 	sve_substract(r, minus_c, result, _unused);
 }
 
-void sve_multiply_montgomery_form_felts(uint64_t a[STATE_WIDTH], uint64_t b[STATE_WIDTH], uint64_t *result)
+void sve_multiply_montgomery_form_felts(const uint64_t a[STATE_WIDTH], const uint64_t b[STATE_WIDTH], uint64_t *result)
 {
-
 	uint64_t low[STATE_WIDTH] = ZERO_ARRAY;
 	uint64_t high[STATE_WIDTH] = ZERO_ARRAY;
 

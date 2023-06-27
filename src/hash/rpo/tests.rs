@@ -38,7 +38,20 @@ extern "C" {
 
 #[test]
 fn test_inv_sbox() {
-    let state = [Felt::new(rand_value()); STATE_WIDTH];
+    let state: [Felt; STATE_WIDTH] = [
+        Felt::new(rand_value()),
+        Felt::new(rand_value()),
+        Felt::new(rand_value()),
+        Felt::new(rand_value()),
+        Felt::new(rand_value()),
+        Felt::new(rand_value()),
+        Felt::new(rand_value()),
+        Felt::new(rand_value()),
+        Felt::new(rand_value()),
+        Felt::new(rand_value()),
+        Felt::new(rand_value()),
+        Felt::new(rand_value()),
+    ];
 
     let mut expected = state;
     expected.iter_mut().for_each(|v| *v = v.exp(INV_ALPHA));
