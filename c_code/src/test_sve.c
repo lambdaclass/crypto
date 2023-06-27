@@ -190,7 +190,7 @@ void sve_copy(const uint64_t a[STATE_WIDTH], uint64_t *copy)
 	svbool_t pg = svwhilelt_b64(i, (int64_t)STATE_WIDTH);
 	do
 	{
-		svuin64_t a_vec = svld1(pg, &a[i]);
+		svuint64_t a_vec = svld1(pg, &a[i]);
 		svst1(pg, &copy[i], a_vec);
 
 		i += svcntd();
