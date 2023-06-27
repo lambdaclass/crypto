@@ -108,7 +108,7 @@ void sve_substract_as_u32(const uint64_t x[STATE_WIDTH], const uint64_t y[STATE_
 		svuint32_t y_vec = svld1(pg, (uint32_t *)&y[i]);
 		svst1(pg, (uint32_t *)&result[i], svsub_z(pg, x_vec, y_vec));
 
-		i += svcntd();
+		i += svcntw();
 		pg = svwhilelt_b32(i, (int32_t)STATE_WIDTH); // [1]
 	} while (svptest_any(svptrue_b32(), pg));
 }
