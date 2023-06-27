@@ -1,6 +1,6 @@
 .PHONY: clean fmt
 
-TARGET=test
+TARGET=test_sve
 
 CC=cc
 CFLAGS=-std=c99 -march=armv8-a+sve -Wall -Wextra -pedantic -g -O0
