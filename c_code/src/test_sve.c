@@ -146,21 +146,21 @@ void sve_multiply_high(const uint64_t x[STATE_WIDTH], const uint64_t y[STATE_WID
 void sve_mont_red_cst(uint64_t x[STATE_WIDTH], uint64_t y[STATE_WIDTH], uint64_t *result)
 {
 	uint64_t e[STATE_WIDTH] = ZERO_ARRAY;
-	uint64_t a[STATE_WIDTH] = ZERO_ARRAY;
-	uint64_t x_shifted[STATE_WIDTH] = ZERO_ARRAY;
+	uint64_t a[STATE_WIDTH];
+	uint64_t x_shifted[STATE_WIDTH];
 
 	sve_shift_left(x, THIRTY_TWOS, x_shifted);
 	sve_add(x, x_shifted, a, e);
 
-	uint64_t a_shifted[STATE_WIDTH] = ZERO_ARRAY;
+	uint64_t a_shifted[STATE_WIDTH];
 	sve_shift_right(a, THIRTY_TWOS, a_shifted);
 
-	uint64_t b[STATE_WIDTH] = ZERO_ARRAY;
-	uint64_t _unused[STATE_WIDTH] = ZERO_ARRAY;
+	uint64_t b[STATE_WIDTH];
+	uint64_t _unused[STATE_WIDTH];
 	sve_substract(a, a_shifted, b, _unused);
 	sve_substract(b, e, b, _unused);
 
-	uint64_t r[STATE_WIDTH] = ZERO_ARRAY;
+	uint64_t r[STATE_WIDTH];
 	uint64_t c[STATE_WIDTH] = ZERO_ARRAY;
 
 	sve_substract(y, b, r, c);
