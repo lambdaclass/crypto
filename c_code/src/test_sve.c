@@ -106,7 +106,7 @@ void sve_substract_as_u32(const uint64_t x[STATE_WIDTH], const uint64_t y[STATE_
 	{
 		svuint32_t x_vec = svld1(pg, (uint32_t *)&x[i]);
 		svuint32_t y_vec = svld1(pg, (uint32_t *)&y[i]);
-		svst1(pg, &result[i], svsub_z(pg, x_vec, y_vec));
+		svst1(pg, (uint32_t *)&result[i], svsub_z(pg, x_vec, y_vec));
 
 		i += svcntd();
 		pg = svwhilelt_b32(i, (int32_t)STATE_WIDTH); // [1]
@@ -126,9 +126,9 @@ void sve_mont_red_cst(uint64_t x[STATE_WIDTH], uint64_t y[STATE_WIDTH], uint64_t
 	sve_shift_right(a, THIRTY_TWOS, a_shifted);
 
 	uint64_t b[STATE_WIDTH] = ZERO_ARRAY;
-	uint64_t _b_underflow[STATE_WIDTH] = ZERO_ARRAY;
-	sve_substract(a, a_shifted, b, _b_underflow);
-	sve_substract(b, e, b, _b_underflow);
+	uint64_t _unused[STATE_WIDTH] = ZERO_ARRAY;
+	sve_substract(a, a_shifted, b, _unused);
+	sve_substract(b, e, b, _unused);
 
 	uint64_t r[STATE_WIDTH] = ZERO_ARRAY;
 	uint64_t c[STATE_WIDTH] = ZERO_ARRAY;
@@ -138,7 +138,7 @@ void sve_mont_red_cst(uint64_t x[STATE_WIDTH], uint64_t y[STATE_WIDTH], uint64_t
 	uint64_t minus_c[STATE_WIDTH] = ZERO_ARRAY;
 	sve_substract_as_u32(ZEROES, c, minus_c);
 
-	sve_substract(r, minus_c, result, _b_underflow);
+	sve_substract(r, minus_c, result, _unused);
 }
 
 void sve_multiply_montgomery_form_felts(uint64_t a[STATE_WIDTH], uint64_t b[STATE_WIDTH], uint64_t *result)
