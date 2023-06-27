@@ -100,17 +100,17 @@ void sve_substract(uint64_t x[STATE_WIDTH], uint64_t y[STATE_WIDTH], uint64_t *r
 
 void sve_substract_as_u32(const uint64_t x[STATE_WIDTH], const uint64_t y[STATE_WIDTH], uint64_t *result)
 {
-	int32_t i = 0;
-	svbool_t pg = svwhilelt_b32(i, (int32_t)STATE_WIDTH);
+	int64_t i = 0;
+	svbool_t pg = svwhilelt_b64(i, (int64_t)STATE_WIDTH);
 	do
 	{
 		svuint32_t x_vec = svld1(pg, (uint32_t *)&x[i]);
 		svuint32_t y_vec = svld1(pg, (uint32_t *)&y[i]);
 		svst1(pg, (uint32_t *)&result[i], svsub_z(pg, x_vec, y_vec));
 
-		i += svcntw();
-		pg = svwhilelt_b32(i, (int32_t)STATE_WIDTH); // [1]
-	} while (svptest_any(svptrue_b32(), pg));
+		i += svcntd();
+		pg = svwhilelt_b64(i, (int64_t)STATE_WIDTH); // [1]
+	} while (svptest_any(svptrue_b64(), pg));
 }
 
 void sve_multiply_low(const uint64_t x[STATE_WIDTH], const uint64_t y[STATE_WIDTH], uint64_t *result)
@@ -184,13 +184,23 @@ void sve_multiply_montgomery_form_felts(const uint64_t a[STATE_WIDTH], const uin
 
 void sve_square(uint64_t *a) { sve_multiply_montgomery_form_felts(a, a, a); }
 
+void sve_copy(const uint64_t a[STATE_WIDTH], uint64_t *copy)
+{
+	int64_t i = 0;
+	svbool_t pg = svwhilelt_b64(i, (int64_t)STATE_WIDTH);
+	do
+	{
+		svuin64_t a_vec = svld1(pg, &a[i]);
+		svst1(pg, &copy[i], a_vec);
+
+		i += svcntd();
+		pg = svwhilelt_b64(i, (int64_t)STATE_WIDTH); // [1]
+	} while (svptest_any(svptrue_b64(), pg));
+}
+
 void sve_exp_acc_3(uint64_t base[STATE_WIDTH], uint64_t tail[STATE_WIDTH], uint64_t *result)
 {
-	// Copy `base` into `result`
-	for (int i = 0; i < STATE_WIDTH; i++)
-	{
-		result[i] = base[i];
-	}
+	sve_copy(base, result);
 
 	// Square each element of `result` M number of times
 	for (int i = 0; i < 3; i++)
@@ -203,11 +213,7 @@ void sve_exp_acc_3(uint64_t base[STATE_WIDTH], uint64_t tail[STATE_WIDTH], uint6
 
 void sve_exp_acc_6(uint64_t base[STATE_WIDTH], uint64_t tail[STATE_WIDTH], uint64_t *result)
 {
-	// Copy `base` into `result`
-	for (int i = 0; i < STATE_WIDTH; i++)
-	{
-		result[i] = base[i];
-	}
+	sve_copy(base, result);
 
 	// Square each element of `result` M number of times
 	for (int i = 0; i < 6; i++)
@@ -220,11 +226,7 @@ void sve_exp_acc_6(uint64_t base[STATE_WIDTH], uint64_t tail[STATE_WIDTH], uint6
 
 void sve_exp_acc_12(uint64_t base[STATE_WIDTH], uint64_t tail[STATE_WIDTH], uint64_t *result)
 {
-	// Copy `base` into `result`
-	for (int i = 0; i < STATE_WIDTH; i++)
-	{
-		result[i] = base[i];
-	}
+	sve_copy(base, result);
 
 	// Square each element of `result` M number of times
 	for (int i = 0; i < 12; i++)
@@ -237,11 +239,7 @@ void sve_exp_acc_12(uint64_t base[STATE_WIDTH], uint64_t tail[STATE_WIDTH], uint
 
 void sve_exp_acc_31(uint64_t base[STATE_WIDTH], uint64_t tail[STATE_WIDTH], uint64_t *result)
 {
-	// Copy `base` into `result`
-	for (int i = 0; i < STATE_WIDTH; i++)
-	{
-		result[i] = base[i];
-	}
+	sve_copy(base, result);
 
 	// Square each element of `result` M number of times
 	for (int i = 0; i < 31; i++)
@@ -255,22 +253,12 @@ void sve_exp_acc_31(uint64_t base[STATE_WIDTH], uint64_t tail[STATE_WIDTH], uint
 void sve_apply_inv_sbox(uint64_t state[STATE_WIDTH])
 {
 	uint64_t t1[STATE_WIDTH];
-
-	// Copy `base` into `result`
-	for (int i = 0; i < STATE_WIDTH; i++)
-	{
-		t1[i] = state[i];
-	}
+	sve_copy(state, t1);
 
 	sve_square(t1);
 
 	uint64_t t2[STATE_WIDTH];
-
-	// Copy `base` into `result`
-	for (int i = 0; i < STATE_WIDTH; i++)
-	{
-		t2[i] = t1[i];
-	}
+	sve_copy(t1, t2);
 
 	sve_square(t2);
 
